@@ -2,20 +2,16 @@ local HttpService = game:GetService("HttpService")
 
 local InterfaceManager = {} do
 
-    -- ═══════════════════════════════════════
-    --              Default Config
-    -- ═══════════════════════════════════════
     local DEFAULTS = {
-        Theme       = "Darker",
-        Acrylic     = true,
+        Theme        = "Darker",
+        Acrylic      = true,
         Transparency = true,
-        MenuKeybind = "LeftControl",
+        MenuKeybind  = "LeftControl",
     }
 
     InterfaceManager.Folder   = "FluentSettings"
     InterfaceManager.Settings = {}
 
-    -- Deep copy defaults into Settings
     for k, v in next, DEFAULTS do
         InterfaceManager.Settings[k] = v
     end
@@ -53,7 +49,7 @@ local InterfaceManager = {} do
     end
 
     -- ═══════════════════════════════════════
-    --           Save / Load / Reset
+    --           Save / Load
     -- ═══════════════════════════════════════
     function InterfaceManager:SaveSettings()
         local success, encoded = pcall(HttpService.JSONEncode, HttpService, self.Settings)
@@ -73,7 +69,6 @@ local InterfaceManager = {} do
 
         if success and typeof(decoded) == "table" then
             for k, v in next, decoded do
-                -- โหลดเฉพาะ key ที่มีอยู่ใน DEFAULTS เท่านั้น (ป้องกัน key ขยะ)
                 if DEFAULTS[k] ~= nil then
                     self.Settings[k] = v
                 end
@@ -81,13 +76,6 @@ local InterfaceManager = {} do
         else
             warn("[InterfaceManager] Corrupted settings file, using defaults.")
         end
-    end
-
-    function InterfaceManager:ResetSettings()
-        for k, v in next, DEFAULTS do
-            self.Settings[k] = v
-        end
-        self:SaveSettings()
     end
 
     -- ═══════════════════════════════════════
@@ -126,7 +114,6 @@ local InterfaceManager = {} do
 
         local section = tab:AddSection("Interface")
 
-        -- Theme
         local ThemeDropdown = section:AddDropdown("InterfaceTheme", {
             Title       = "Theme",
             Description = "Changes the interface theme.",
@@ -140,7 +127,6 @@ local InterfaceManager = {} do
         })
         ThemeDropdown:SetValue(Settings.Theme)
 
-        -- Acrylic
         if Library.UseAcrylic then
             section:AddToggle("AcrylicToggle", {
                 Title       = "Acrylic",
@@ -154,7 +140,6 @@ local InterfaceManager = {} do
             })
         end
 
-        -- Transparency
         section:AddToggle("TransparentToggle", {
             Title       = "Transparency",
             Description = "Makes the interface transparent.",
@@ -166,7 +151,6 @@ local InterfaceManager = {} do
             end
         })
 
-        -- Keybind
         local MenuKeybind = section:AddKeybind("MenuKeybind", {
             Title   = "Minimize Bind",
             Default = Settings.MenuKeybind,
@@ -176,22 +160,6 @@ local InterfaceManager = {} do
             self:SaveSettings()
         end)
         Library.MinimizeKeybind = MenuKeybind
-
-        -- Reset to Default
-        section:AddButton({
-            Title       = "Reset to Default",
-            Description = "Resets all interface settings to default.",
-            Callback    = function()
-                self:ResetSettings()
-                self:ApplySettings()
-                ThemeDropdown:SetValue(Settings.Theme)
-                Library:Notify({
-                    Title   = "Interface",
-                    Content = "Settings reset to default.",
-                    Duration = 3
-                })
-            end
-        })
     end
 
 end
